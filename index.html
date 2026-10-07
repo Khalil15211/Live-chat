@@ -1,0 +1,596 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Professor BOLT Chat</title><style>
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================
+   COMPACT CHAT OVERLAY
+========================================= */
+
+.chat-container {
+
+    position: absolute;
+
+    right: 20px;
+    bottom: 70px;
+
+    width: 320px;
+    height: 220px;
+
+    overflow: hidden;
+
+    background: transparent;
+
+    border: none;
+
+}
+
+/* =========================================
+   CHAT AREA
+========================================= */
+
+.chat-scroll {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
+
+    padding: 8px 10px;
+
+    display: flex;
+    align-items: flex-end;
+
+}
+
+/* =========================================
+   CHAT LIST
+========================================= */
+
+.chat-list {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    gap: 4px;
+
+    transition:
+        transform 0.6s ease;
+
+}
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+.message {
+
+    flex-shrink: 0;
+
+    padding: 3px 5px;
+
+    color: white;
+
+    font-size: 15px;
+
+    line-height: 1.3;
+
+    text-shadow:
+
+        0 1px 3px rgba(0,0,0,1),
+
+        0 0 4px rgba(0,0,0,0.9);
+
+    animation:
+
+        messageIn 0.35s ease;
+
+}
+
+/* =========================================
+   MESSAGE APPEAR
+========================================= */
+
+@keyframes messageIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(8px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+/* =========================================
+   USERNAME
+========================================= */
+
+.username {
+
+    font-weight: 800;
+
+    color: #ffd84d;
+
+    margin-right: 5px;
+
+}
+
+/* =========================================
+   COMMENT
+========================================= */
+
+.comment {
+
+    color:
+        rgba(255,255,255,0.97);
+
+}
+
+/* =========================================
+   TIME
+========================================= */
+
+.timestamp {
+
+    color:
+        rgba(255,255,255,0.45);
+
+    font-size: 10px;
+
+    margin-left: 5px;
+
+}
+
+/* =========================================
+   SPECIAL USERS
+========================================= */
+
+.vip .username {
+
+    color: #ff8cff;
+
+}
+
+.mod .username {
+
+    color: #5ee7ff;
+
+}
+
+.owner .username {
+
+    color: #ffb300;
+
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:600px) {
+
+    .chat-container {
+
+        width: 300px;
+
+        height: 205px;
+
+        right: 10px;
+
+        bottom: 55px;
+
+    }
+
+    .message {
+
+        font-size: 14px;
+
+    }
+
+}
+
+</style></head><body><div class="chat-container"><div
+    class="chat-scroll"
+    id="chatScroll">
+
+    <div
+        class="chat-list"
+        id="chatList">
+    </div>
+
+</div>
+
+</div><script>
+
+/* =========================================
+   USERS
+========================================= */
+
+const users = [
+
+    "ShadowX",
+    "Hunter",
+    "BOLT_Fan",
+    "Ahmed",
+    "ZainGaming",
+    "OP_Killer",
+    "PUBG_Lover",
+    "RizwanYT",
+    "DarkSoul",
+    "M416King",
+    "SniperBoy",
+    "Ghost",
+    "ToxicPlayer",
+    "NoobMaster",
+    "KingOfPUBG",
+    "PakGamer",
+    "AceMaster",
+    "ClutchGod",
+    "Headshot",
+    "Legend",
+    "BOLTArmy",
+    "Mafia",
+    "Xtreme",
+    "Wolf",
+    "Falcon",
+    "Dragon",
+    "Shadow",
+    "Ranger",
+    "Warrior",
+    "PUBGPro"
+
+];
+
+
+/* =========================================
+   COMMENTS
+========================================= */
+
+const comments = [
+
+    "Bhai kya gameplay hai 🔥",
+    "Professor BOLT OP 🔥🔥",
+    "Assalam o Alaikum BOLT bhai ❤️",
+    "Bhai aaj chicken dinner pakka!",
+    "PUBG ka asli professor 😂",
+    "What a spray bro!",
+    "M416 ka recoil dekho 🔥",
+    "Bhai sensitivity share karo",
+    "Headshot! 😱",
+    "Kya clutch tha!",
+    "Bhai 1v4 karo!",
+    "OP gameplay ❤️",
+    "Pakistan Zindabad 🇵🇰",
+    "BOLT Army ❤️",
+    "Bhai mic clear aa rahi hai",
+    "Kya scene hai 😂",
+    "Enemy kidhar hai?",
+    "Rush karo bhai!",
+    "Grenade OP 😂",
+    "Nice one!",
+    "Bhai live kab se ho?",
+    "Aaj conqueror push?",
+    "Ace Master loading 🔥",
+    "Bhai ye banda hacker hai 😂",
+    "What a finish!",
+    "M416 + 6x ❤️",
+    "Bhai gyro use karte ho?",
+    "Sensitivity please!",
+    "BOLT bhai love from Sindh ❤️",
+    "Clutch King 👑",
+    "Ye hui na gameplay!",
+    "Enemy ko uda diya 😂",
+    "Bhai OP stream!",
+    "Watching from Pakistan 🇵🇰",
+    "Chicken dinner incoming!",
+    "Last zone dangerous hai",
+    "Bhai smoke karo!",
+    "Cover lo!",
+    "Nice knock!",
+    "One tap 😱",
+    "Bhai kya aim hai!",
+    "PUBG legend!",
+    "BOLT OP OP OP!",
+    "Stream quality 🔥",
+    "Aaj kitne kills?",
+    "20 kills possible!",
+    "Rush BOLT bhai!",
+    "Squad wipe 🔥",
+    "Full team down!",
+    "Nice spray!",
+    "AWM milegi?",
+    "Sniper gameplay please",
+    "Bhai sound setting batao",
+    "Enemy footsteps sunai de rahe hain?",
+    "Kya reflex hai!",
+    "Impossible clutch!",
+    "Bhai zone aa gaya!",
+    "Run run run 😂",
+    "Vehicle kidhar hai?",
+    "Bhai bike lo!",
+    "Nice rotation",
+    "Perfect position!",
+    "Top 10!",
+    "Winner winner chicken dinner!",
+    "Bhai OP stream ❤️",
+    "New subscriber here!",
+    "Notification squad 🔥",
+    "Professor BOLT best!",
+    "Bhai daily stream karo",
+    "PUBG Mobile king 👑",
+    "Kya spray transfer tha!",
+    "Bhai enemy one HP!",
+    "Finish finish 😂",
+    "Nice knock bro!",
+    "Clutch incoming!",
+    "Bhai calm rehna 😂",
+    "Zone ke andar jao",
+    "Bhai left side!",
+    "Right right right!",
+    "Behind you!",
+    "Careful bro!",
+    "What a save!",
+    "Teamwork OP",
+    "Squad goals 🔥",
+    "BOLT Army assemble!",
+    "Chat spam BOLT 🔥",
+    "Legendary gameplay",
+    "Bhai kya kar diya 😂",
+    "Enemy deleted!",
+    "Lobby bhej diya 😂",
+    "Aim bot jesa aim!",
+    "No recoil 😱",
+    "Professional player!",
+    "Love your gameplay ❤️",
+    "Keep going BOLT!",
+    "Next game kab?",
+    "Another chicken dinner!",
+    "OP OP OP!",
+    "Bhai 1000 likes!",
+    "Like kar do guys ❤️",
+    "Stream share karo!",
+    "BOLT is cooking 🔥",
+    "Absolute beast!",
+    "What a player!",
+    "GG!",
+    "GG WP!",
+    "Easy chicken!",
+    "Bhai last enemy!",
+    "Finish him!",
+    "Winner winner!",
+    "BOLT never disappoints!",
+    "PUBG professor in action!",
+    "🔥🔥🔥🔥🔥"
+
+];
+
+
+/* =========================================
+   CHAT
+========================================= */
+
+const chatList =
+    document.getElementById("chatList");
+
+let messageIndex = 0;
+
+
+/* =========================================
+   TIME
+========================================= */
+
+function getTime() {
+
+    const now =
+        new Date();
+
+    return now.toLocaleTimeString(
+        [],
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+/* =========================================
+   RANDOM USER
+========================================= */
+
+function randomUser() {
+
+    return users[
+        Math.floor(
+            Math.random() *
+            users.length
+        )
+    ];
+
+}
+
+
+/* =========================================
+   ADD MESSAGE
+========================================= */
+
+function addMessage() {
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "message";
+
+
+    /* Special users */
+
+    const random =
+        Math.random();
+
+    if (random < 0.05) {
+
+        message.classList.add(
+            "owner"
+        );
+
+    }
+
+    else if (random < 0.10) {
+
+        message.classList.add(
+            "mod"
+        );
+
+    }
+
+    else if (random < 0.16) {
+
+        message.classList.add(
+            "vip"
+        );
+
+    }
+
+
+    const username =
+        randomUser();
+
+    const comment =
+        comments[
+            messageIndex %
+            comments.length
+        ];
+
+    messageIndex++;
+
+
+    message.innerHTML = `
+
+        <span class="username">
+            ${username}
+        </span>
+
+        <span class="comment">
+            ${comment}
+        </span>
+
+        <span class="timestamp">
+            ${getTime()}
+        </span>
+
+    `;
+
+
+    chatList.appendChild(
+        message
+    );
+
+
+    /*
+       Keep only 8 messages
+    */
+
+    while (
+        chatList.children.length > 8
+    ) {
+
+        chatList.removeChild(
+            chatList.firstElementChild
+        );
+
+    }
+
+
+    /*
+       Keep latest message visible
+    */
+
+    requestAnimationFrame(() => {
+
+        chatList.style.transform =
+            "translateY(0)";
+
+    });
+
+}
+
+
+/* =========================================
+   INITIAL COMMENTS
+========================================= */
+
+for (
+    let i = 0;
+    i < 7;
+    i++
+) {
+
+    addMessage();
+
+}
+
+
+/* =========================================
+   NEW COMMENTS
+   1.5–3 SECONDS
+========================================= */
+
+function nextMessage() {
+
+    addMessage();
+
+    const delay =
+        1500 +
+        Math.random() *
+        1500;
+
+    setTimeout(
+        nextMessage,
+        delay
+    );
+
+}
+
+setTimeout(
+    nextMessage,
+    1800
+);
+
+</script></body>
+  </html>
